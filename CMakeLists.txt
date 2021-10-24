@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.0)
 project(lab_ CXX)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(CMAKE_CXX_FLAGS "-O3 -fpermissive -Wextra")
+set(CMAKE_CXX_FLAGS " -std=c++17 -O3 -fpermissive -Wextra")
 
 
 set (LAB_DIR ${PROJECT_SOURCE_DIR})

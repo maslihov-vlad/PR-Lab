@@ -7,6 +7,7 @@
 
 #include <server.hpp>
 #include <distribution_message.hpp>
+#include <order_message.hpp>
 
 #include "order.hpp"
 
@@ -33,13 +34,16 @@ private:
 	{
 		static size_t id;
 
-		bool is_free;
-		order* order_ = NULL;
+		void start();
+		void process();
+
+		bool is_free = true;
+		order order_;
 	};
     
 	void start();
 
-	server *hall_pipeline;
+	server<distribution_message, order_message> *hall_pipeline;
 	std::thread t;
 
 	size_t port;

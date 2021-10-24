@@ -6,6 +6,7 @@
 
 #include <client.hpp>
 #include <order_message.hpp>
+#include <distribution_message.hpp>
 
 #include "order.hpp"
 
@@ -53,7 +54,8 @@ private:
 
 		std::time_t order_start;
 		bool is_free = true;
-		const order* order_ = NULL;
+		size_t table_id = -1;
+		const order* order_ = nullptr;
 
 		void get_order(order* new_order);
 		void POST();
@@ -61,7 +63,7 @@ private:
 
 	void start();
 
-	client<order_message> *kitchen_pipeline;
+	client<order_message, distribution_message> *kitchen_pipeline;
 	std::thread t;
 	size_t stars;
 	size_t num_of_tables;

@@ -6,17 +6,35 @@ void hall::start()
 	tcp::resolver resolver(io_context);
 	auto endpoints = resolver.resolve("127.0.0.1", port.c_str());
 	
-	kitchen_pipeline = new client<order_message>(io_context, endpoints); // костыль 
+	kitchen_pipeline = new client<order_message, distribution_message>(io_context, endpoints); // костыль 
 	std::thread t([&io_context](){ io_context.run(); });
 
 	try {
 		while(1) {
 			for (auto waiter : waiters) {
-				if (!waiter.is_free)
+				if (!waiter.is_free) {
+					auto msgs = kitchen_pipeline->get_accepted_msg();
+					for (auto msg = msgs.begin(); msg != msgs.end(); ++msg) { 
+						if (waiter.order_id == (reinterpret_cast<distribution*>(msg->body()))->order_id) { 
+							msgs.erase(msg);
+						}
+						for (auto table : tables) { 
+							if (table.id == waiter.table_id) {
+								table.have_order = false;
+								table.is_free = true;
+							}
+						}
+						waiter.table_id = -1; 
+						waiter.is_free = true;
+						waiter.order_ = nullptr;
+						break;
+					}
 					continue;
+				}
 
 				for (auto table : tables) {
 					waiter.get_order(table.request_order());
+					waiter.table_id = table.id;
 				}
 
 			}
@@ -77,7 +95,7 @@ order* hall::table::gen_order()
 
 void hall::waiter::get_order(order* new_order) 
 {
-	if (new_order == NULL) 
+	if (new_order == nullptr) 
 		return;
 	new_order->order_id = order_id++;
 	new_order->waiter_id = id;

@@ -8,11 +8,15 @@ set(TEST_SERV_SRC
 	${TEST_SERV_DIR}/${PROJECT_NAME}.cpp
 	)
 
-include_directories(${SERVER}/inc)
+include_directories(
+	${SERVER}/inc
+	${MESSAGE}/inc
+	${HELPERS}
+	)
 
 add_executable( ${PROJECT_NAME}
 	${TEST_SERV_SRC}
 	)
 
-target_link_libraries(${PROJECT_NAME} server ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} server message)
 
