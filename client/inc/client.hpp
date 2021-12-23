@@ -5,13 +5,12 @@
 #include <thread>
 #include <boost/asio.hpp>
 #include <string>
-#include <list>
 
 #include <message.hpp>
 
 using boost::asio::ip::tcp;
 
-template <typename MESSAGE_POST, typename MESSAGE_GET>
+template <typename MESSAGE>
 class client
 {
 public:
@@ -24,7 +23,7 @@ public:
     do_connect(endpoints);
   }
 
-  void write(const MESSAGE_POST& msg)
+  void write(const MESSAGE& msg)
   {
   boost::asio::post(io_context_,
       [this, msg]()
@@ -35,11 +34,6 @@ public:
           do_write();
         }
       });
-  }
-
-  std::list<MESSAGE_GET>& get_accepted_msg()
-  {
-    return accepted_msg;
   }
 
   void close()
@@ -62,17 +56,11 @@ private:
   void do_read_header() 
   {
     boost::asio::async_read(socket_,
-    boost::asio::buffer(read_msg_.data(), MESSAGE_GET::header_length + MESSAGE_GET::tag_length),
+    boost::asio::buffer(read_msg_.data(), MESSAGE::header_length),
     [this](boost::system::error_code ec, std::size_t /*length*/)
     {
-      
       if (!ec) {
-        printf("\n");
-        read_msg_.decode_header();
-        read_msg_.decode_tag();
-
-        printf("len %d\ntag %d\n", read_msg_.data()[0], read_msg_.data()[1]);
-        
+        std::cout << "tag : " << std::string((char*)read_msg_.data(), MESSAGE::header_length) << "\n";
         do_read_body();
       } else {
         socket_.close();
@@ -87,8 +75,7 @@ private:
     [this](boost::system::error_code ec, std::size_t /*length*/)
     {
       if (!ec) {
-        std::cout << std::string((char*)read_msg_.body(), read_msg_.body_length()) << "\n";
-        accepted_msg.push_front(read_msg_);
+        std::cout << std::string((char*)read_msg_.data(), MESSAGE::header_length) << "\n";
         do_read_header();
       } else {
         socket_.close();
@@ -122,7 +109,6 @@ private:
   boost::asio::io_context& io_context_;
   tcp::socket socket_;
 
-  MESSAGE_GET read_msg_;
-  std::deque<MESSAGE_POST> write_msgs_;
-  std::list<MESSAGE_GET> accepted_msg;
+  MESSAGE read_msg_;
+  std::deque<MESSAGE> write_msgs_;
 };

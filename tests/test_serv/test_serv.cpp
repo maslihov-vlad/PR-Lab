@@ -1,7 +1,5 @@
 #include <server.hpp>
 #include "iostream"
-#include <order_message.hpp>
-#include <distribution_message.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -13,7 +11,7 @@ int main(int argc, char* argv[])
 
     boost::asio::io_context io_context;
 
-    server<distribution_message, order_message> s(io_context, std::atoi(argv[1]));
+    server s(io_context, std::atoi(argv[1]));
 
     io_context.run();
   } catch (std::exception& e) {
